@@ -8,7 +8,7 @@ import { getUserById } from "@/action/user";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt" },
-  secret: process.env.NEXT_PUBLIC_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/auth/login",
     signOut: "/auth/login",
