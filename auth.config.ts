@@ -7,7 +7,7 @@ import { getUserByEmail } from "@/action/user";
 import { compare, genSaltSync } from "bcryptjs";
 
 const generateUsername = (name: string) => {
-  return name.replace(/[^a-z0-9]/g, '').toLowerCase() + genSaltSync(10);
+  return (name+genSaltSync(10)).toLowerCase().replace(/[^a-z0-9]/g, '');
 };
 
 const getProfile = (profile: any, idKey: string, nameKey: string, emailKey: string, imageKey: string) => {
