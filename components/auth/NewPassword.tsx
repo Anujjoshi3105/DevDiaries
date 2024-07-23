@@ -94,6 +94,9 @@ export default function NewPassword() {
                         {loading ? <><LoaderCircle className="w-4 h-4 animate-spin" />Loading</> : "Reset Password"}
                     </Button>
                 </form>
+                <Button variant="outline" className="w-full" asChild>
+                    <Link href="/auth/login">Back to Login</Link>
+                </Button>
             </div>
         </div>
     );
