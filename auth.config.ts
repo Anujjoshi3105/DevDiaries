@@ -11,10 +11,7 @@ const generateUsername = (name: string) => {
 };
 
 const getProfile = (profile: any, idKey: string, nameKey: string, emailKey: string, imageKey: string) => {
-  let name = (profile[nameKey] || profile[emailKey].split("@")[0] || "").toLowerCase();
-  if (/[^a-z0-9]/.test(name)) {
-    name = generateUsername(name);
-  }
+  let name = generateUsername(profile[nameKey] || profile[emailKey].split("@")[0] || "");
   return {
     id: String(profile[idKey]),
     name,
