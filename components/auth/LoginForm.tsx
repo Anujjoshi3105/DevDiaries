@@ -35,7 +35,7 @@ export default function LoginForm() {
             if (result.error) {
                 toast({
                     title: "Error",
-                    description: "Invalid Credentials",
+                    description: result.error,
                     variant: "destructive",
                 });
             } else {
