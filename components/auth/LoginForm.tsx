@@ -32,7 +32,7 @@ export default function LoginForm() {
             const result = await login(values);
             setLoading(false);
 
-            if (result.error) {
+            if (result?.error) {
                 toast({
                     title: "Error",
                     description: result.error,

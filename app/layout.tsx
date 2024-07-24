@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import Provider from "@/app/provider";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"] });
 
@@ -23,6 +24,7 @@ export default function RootLayout({
         <link rel="icon" href="/logo.png" />
       </head>
       <body className={spaceGrotesk.className}>
+        <Provider>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -32,6 +34,7 @@ export default function RootLayout({
         {children}
         <Toaster />
         </ThemeProvider>
+        </Provider>
       </body>
     </html>
   );

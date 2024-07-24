@@ -9,11 +9,17 @@ import { AlignLeftIcon, SearchIcon } from "lucide-react";
 import { headerLinks } from "@/data/navLink";
 import { Theme } from "@/components/Theme";
 import { Input } from "@/components/ui/input";
-
+import { useToast } from "@/components/ui/use-toast";
+import User from "@/components/user";
+import { useSession, signOut } from "next-auth/react";
+import Search from "@/components/Search";
 export default function Header() {
+  const { data: session, status } = useSession();
+  const [search, setSearch] = useState("");
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +32,23 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [prevScrollPos]);
+
+  const handleSignOut = async () => {
+    try {
+      signOut();
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while signing out.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <header
       className={`fixed top-0 z-50 w-full transition-transform duration-300 ${
@@ -61,7 +84,9 @@ export default function Header() {
               ))}
             </div>
             <div className="flex gap-2 w-full justify-center">
-              { /*!session ? (
+              { status === "authenticated" ? (
+                  <Button variant="outline" onClick={handleSignOut}>Log Out</Button>
+              ) : (
                 <>
                 <Button asChild variant="outline" className="hidden lg:block">
                   <Link href="/auth/login">Login</Link>
@@ -70,17 +95,7 @@ export default function Header() {
                   <Link href="/auth/signup">Sign Up</Link>
                 </Button>
                 </>
-              ) : (
-                <Button variant="outline" onClick={() => signOut()}>Log Out</Button>
-              )*/}
-              <>
-                <Button asChild variant="outline" className="hidden lg:block">
-                  <Link href="/auth/login">Login</Link>
-                </Button>
-                <Button asChild variant="outline" className="hidden lg:block">
-                  <Link href="/auth/signup">Sign Up</Link>
-                </Button>
-                </>
+              )}
             </div>
           </SheetContent>
         </Sheet>
@@ -105,23 +120,11 @@ export default function Header() {
         </nav>
         <div className="flex gap-6 items-center justify-center">
           <div className="flex gap-2">
-          <Button variant="outline" size="icon" className="md:hidden flex rounded-full hover:text-primary">
-            <SearchIcon className="h-[1.2rem] w-[1.2rem]"/>
-            <span className="sr-only">Search</span>
-          </Button>
-          <div className="md:flex hidden relative ml-auto">
-            <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="p-8 pr-4 py-2 rounded-full"
-            />
-            <span className="sr-only">Search</span>
-          </div>
+          <Search />
           <Theme />
           </div>
-          {/* session ? (
-            <User email={session.user.email} username={session.user.username} profilePhoto={session.user.profilePhoto} />
+          { status === "authenticated" ? (
+            <User />
           ) : (
             <div className="flex gap-2">
               <Button asChild variant="outline" className="hidden lg:block">
@@ -131,15 +134,7 @@ export default function Header() {
                 <Link href="/auth/signup">Sign Up</Link>
               </Button>
             </div>
-          ) */}
-            <div className="flex gap-2">
-                <Button asChild variant="outline" className="hidden lg:block">
-                    <Link href="/auth/login">Login</Link>
-                </Button>
-                <Button asChild variant="outline" className="hidden lg:block">
-                    <Link href="/auth/signup">Sign Up</Link>
-                </Button>
-            </div>
+          )}
         </div>
       </div>
     </header>

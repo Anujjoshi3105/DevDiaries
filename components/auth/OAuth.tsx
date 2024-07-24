@@ -21,13 +21,13 @@ export default function OAuth() {
         callbackUrl: process.env.NEXTAUTH_URL,
       });
       if (result?.error) {
-        toast({ title: 'Error', description: 'Login with Google failed' });
+        toast({ title: 'Error', description: `Google Login Failed: ${result.error}` });
       } else {
-        toast({ title: 'Success', description: 'Login with Google' });
+        toast({ title: 'Success', description: 'Login with Google successful' });
         router.push('/');
       }
-    } catch (error) {
-      toast({ title: 'Error', description: 'An error occurred' });
+    } catch (error: any) {
+      toast({ title: 'Error', description: `An error occurred: ${error.message || error.toString()}` });
     } finally {
       setLoadingGoogle(false);
     }
@@ -41,13 +41,13 @@ export default function OAuth() {
         callbackUrl: process.env.NEXTAUTH_URL,
       });
       if (result?.error) {
-        toast({ title: 'Error', description: 'Login with Github failed' });
+        toast({ title: 'Error', description: `Github Login Failed: ${result.error}` });
       } else {
-        toast({ title: 'Success', description: 'Login with Github' });
+        toast({ title: 'Success', description: 'Login with Github successful' });
         router.push('/');
       }
-    } catch (error) {
-      toast({ title: 'Error', description: 'An error occurred' });
+    } catch (error: any) {
+      toast({ title: 'Error', description: `An error occurred: ${error.message || error.toString()}` });
     } finally {
       setLoadingGithub(false);
     }

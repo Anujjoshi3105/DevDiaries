@@ -1,3 +1,5 @@
+'use client';
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu,
@@ -10,17 +12,14 @@ import { DropdownMenu,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
-import { auth, signOut } from "@/auth";
-
-export async function User() {
-  const session = await auth();
-  
+import {useSession, signOut} from "next-auth/react";
+export default function User() {
+  const { data: session } = useSession();
   const { toast } = useToast();
 
   const handleSignOut = async () => {
-    "use server";
     try {
-      await signOut();
+      signOut();
       toast({
         title: "Signed Out",
         description: "You have been successfully signed out.",
@@ -56,7 +55,7 @@ export async function User() {
           <Link href={`/user/${session?.user?.name}`}>
           <DropdownMenuItem>Profile</DropdownMenuItem>
           </Link>
-          <Link href="/user/dashboard">
+          <Link href="/dashboard">
             <DropdownMenuItem>Dashboard</DropdownMenuItem>
           </Link>
         </DropdownMenuGroup>

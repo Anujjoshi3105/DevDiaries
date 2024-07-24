@@ -1,4 +1,4 @@
-import type { NextAuthConfig } from "next-auth";
+import { AuthError, type NextAuthConfig } from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
@@ -42,15 +42,17 @@ const authConfig: NextAuthConfig = {
         const validateFields = loginSchema.safeParse(credentials);
         if (validateFields.success) {
           const { email, password } = validateFields.data;
-          const user = await getUserByEmail(email);
-          if (user && user.password) {
-            const correctPassword = await compare(password, user.password);
-            if (correctPassword) {
-              return { id: user.id, email: user.email, name: user.name, image: user.image, role: user.role };
-            }
+          const user = await getUserByEmail(email.toLowerCase());
+          if(!user || !user.password) return null;
+          const correctPassword = await compare(password, user.password);
+          if (correctPassword) {
+            return { id: user.id, email: user.email, name: user.name, image: user.image, role: user.role };
+          } else {
+            throw new AuthError("Invalid Credentials");
           }
+        } else {
+          throw new AuthError("Invalid Credentials");
         }
-        return null;
       },
     }),
   ],

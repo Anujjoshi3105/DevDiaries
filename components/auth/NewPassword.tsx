@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { LoaderCircle } from "lucide-react";
+import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -18,17 +19,19 @@ type FormData = z.infer<typeof newPasswordSchema>;
 export default function NewPassword() {
     const searchParams = useSearchParams();
     const token = searchParams?.get('token');
-    const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
         resolver: zodResolver(newPasswordSchema),
     });
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
+    const formRef = useRef<HTMLFormElement>(null);
 
     const onSubmit = async (values: FormData) => {
         setLoading(true);
         try {
             const validateFields = newPasswordSchema.safeParse(values);
             if (!validateFields.success) {
+                setLoading(false);
                 return toast({
                     title: "Error",
                     description: validateFields.error.errors[0].message,
@@ -49,6 +52,7 @@ export default function NewPassword() {
                     title: "Success",
                     description: "Password has been successfully reset",
                 });
+                reset();
             }
         } catch (error) {
             setLoading(false);
@@ -69,7 +73,7 @@ export default function NewPassword() {
                         Enter and confirm your new password
                     </p>
                 </div>
-                <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
+                <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)} ref={formRef}>
                     <div className="grid gap-2">
                         <Label htmlFor="newpassword">New Password</Label>
                         <Password

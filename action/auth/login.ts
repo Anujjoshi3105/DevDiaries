@@ -7,6 +7,7 @@ import { AuthError } from "next-auth";
 import { getUserByEmail } from "@/action/user";
 import { generateVerificationToken } from "@/lib/tokens";
 import { sendEmail } from "@/lib/mail";
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 
 export async function login(data: z.infer<typeof loginSchema>) {
     const validateFields = loginSchema.safeParse(data);
@@ -21,7 +22,7 @@ export async function login(data: z.infer<typeof loginSchema>) {
     }
     const normalizedEmail = email.toLowerCase();
     const existingUser = await getUserByEmail(normalizedEmail);
-    if (!existingUser || !existingUser.password || !existingUser.email) {
+    if (!existingUser ||  !existingUser.email) {
         return { error: "Email not found" };
     }
     if(!existingUser.emailVerified) {
@@ -30,19 +31,16 @@ export async function login(data: z.infer<typeof loginSchema>) {
         return { error: "Please verify your email" };
     }
 
-
     try {
-        await signIn("credentials", { email, password, redirect: false });
-        return { message: "Login successful" };
+        const signInResponse = await signIn("credentials", { email: normalizedEmail, password, redirectTo: DEFAULT_LOGIN_REDIRECT });
+        if (!signInResponse) {
+            return { error: "Invalid Credentials" };
+        }
+        return { success: true };
     } catch (error) {
         if (error instanceof AuthError) {
-            switch (error.type) {
-                case "CredentialsSignin":
-                    return { error: "Invalid Credentials" };
-                default:
-                    return { error: error.message };
-            }
+            return { error: error.message };
         }
-        return { error: "Something went wrong" };
+        throw error;
     }
 }
