@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -26,12 +23,14 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  bio           String?
+  profession    String?
   accounts Account[]
-  stories  Story[]
+  blogs   Blog[]
   comments Comment[]
-  claps    Clap[]
-  saves    Save[]
-  topics   Topics?
+  likes   Like[]
+  saves   Save[]
+  topics  Topics?
 }
 
 model Account {
@@ -72,17 +71,19 @@ model PasswordToken {
   @@unique([email, token])
 }
 
-model Story {
-  id        String   @id @default(dbgenerated("concat('story_', replace(cast(gen_random_uuid() as text), '-', ''))")) @db.Text
+model Blog {
+  id        String   @id @default(dbgenerated("concat('blog_', replace(cast(gen_random_uuid() as text), '-', ''))")) @db.Text
   authorId  String
+  title     String?
   content   String?
   topics    String[]
+  image  String?
   publish   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  claps    Clap[]
+  likes    Like[]
   comments Comment[]
   saves    Save[]
 }
@@ -92,25 +93,25 @@ model Comment {
   content         String
   createdAt       DateTime @default(now())
   userId          String
-  storyId         String
+  blogId          String
   parentCommentId String?
 
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  story         Story     @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  blog          Blog      @relation(fields: [blogId], references: [id], onDelete: Cascade)
   parentComment Comment?  @relation("CommentToComment", fields: [parentCommentId], references: [id], onDelete: Cascade)
   replies       Comment[] @relation("CommentToComment")
-  claps         Clap[]
+  likes         Like[]
 }
 
-model Clap {
-  id        String  @id @default(dbgenerated("concat('clap_', replace(cast(gen_random_uuid() as text), '-', ''))")) @db.Text
+model Like {
+  id        String  @id @default(dbgenerated("concat('like_', replace(cast(gen_random_uuid() as text), '-', ''))")) @db.Text
   userId    String
-  storyId   String
+  blogId    String
   commentId String?
-  clapCount Int     @default(0)
+  likeCount Int     @default(0)
 
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  story   Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  blog    Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
   comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
 }
 
@@ -118,10 +119,10 @@ model Save {
   id        String   @id @default(dbgenerated("concat('save_', replace(cast(gen_random_uuid() as text), '-', ''))")) @db.Text
   createdAt DateTime @default(now())
   userId    String
-  storyId   String
+  blogId    String
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  blog  Blog  @relation(fields: [blogId], references: [id], onDelete: Cascade)
 }
 
 model Following {

@@ -1,5 +1,9 @@
 export const publicRoutes = [
-    "/", "/blog",
+    "/", 
+    "/blog",
+    "/blog/.*",
+    "/user",
+    "/user/.*"
 ];
 export const authRoutes = [
     "/auth/login", 
@@ -9,5 +13,5 @@ export const authRoutes = [
     "/auth/new-password",
     "/auth/verify",
 ];
-export const apiAuthPrefix = "/api/auth";
+export const apiAuthPrefix = "/api/";
 export const DEFAULT_LOGIN_REDIRECT = "/dashboard";

@@ -21,16 +21,21 @@ const getProfile = (profile: any, idKey: string, nameKey: string, emailKey: stri
 };
 
 const authConfig: NextAuthConfig = {
+  theme: {
+    logo: "/logo.png",
+  },
   providers: [
     GitHub({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
       profile: (profile) => getProfile(profile, "id", "name", "email", "avatar_url"),
+      allowDangerousEmailAccountLinking: true,
     }),
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       profile: (profile) => getProfile(profile, "sub", "name", "email", "picture"),
+      allowDangerousEmailAccountLinking: true
     }),
     Credentials({
       name: "Credentials",

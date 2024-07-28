@@ -1,3 +1,5 @@
+"use client";
+
 import Search from "@/components/Search";
 import { Theme } from "@/components/Theme";
 

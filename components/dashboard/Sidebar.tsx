@@ -14,7 +14,7 @@ import { useToast } from '../ui/use-toast';
 export default function Sidebar() {
   const { data: session } = useSession();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
+  const [windowWidth, setWindowWidth] = useState(0);
   const { toast } = useToast();
 
   const handleSignOut = async () => {
@@ -35,6 +35,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
+    handleResize(); // Initialize window width on component mount
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -53,7 +54,7 @@ export default function Sidebar() {
       <div className="flex flex-col items-center gap-4">
         <div className="flex items-center gap-2">
           <Avatar>
-            <AvatarImage src={session?.user?.image!} />
+            <AvatarImage src={session?.user?.image ?? '/default-avatar.png'} />
             <AvatarFallback>{session?.user?.name?.charAt(0)}</AvatarFallback>
           </Avatar>
           {!isMobile && !isCollapsed && (
@@ -67,32 +68,12 @@ export default function Sidebar() {
       </div>
 
       <nav className="space-y-4">
-        <Button variant="ghost" size="sm" className="w-full justify-start text-base" asChild>
-          <Link href="/dashboard/" prefetch={false}>
-            <UserIcon className="w-15 h-15" />
-            {!isMobile && !isCollapsed && <span className="ml-2 font-medium">Profile</span>}
-          </Link>
-        </Button>
-        <div role="separator" className="-mx-1 my-2 h-px bg-muted" />
-        <Button variant="ghost" size="sm" className="w-full justify-start text-base" asChild>
-          <Link href="/dashboard/blog" prefetch={false}>
-            <FileText className="w-15 h-15" />
-            {!isMobile && !isCollapsed && <span className="ml-2 font-medium">Blog</span>}
-          </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="w-full justify-start text-base" asChild>
-          <Link href="/dashboard/addblog" prefetch={false}>
-            <FilePlus2 className="w-15 h-15" />
-            {!isMobile && !isCollapsed && <span className="ml-2 font-medium">Add Blog</span>}
-          </Link>
-        </Button>
-        <div role="separator" className="-mx-1 my-2 h-px bg-muted" />
-        <Button variant="ghost" size="sm" className="w-full justify-start text-base" asChild>
-          <Link href="/dashboard/setting" prefetch={false}>
-            <SettingsIcon className="w-15 h-15" />
-            {!isMobile && !isCollapsed && <span className="ml-2 font-medium">Setting</span>}
-          </Link>
-        </Button>
+        <SidebarLink href="/dashboard/" icon={<UserIcon />} label="Profile" isMobile={isMobile} isCollapsed={isCollapsed} />
+        <div role="separator" className="-mx-1 my-2 h-px bg-muted"></div>
+        <SidebarLink href="/dashboard/blog" icon={<FileText />} label="Blog" isMobile={isMobile} isCollapsed={isCollapsed} />
+        <SidebarLink href="/dashboard/add" icon={<FilePlus2 />} label="Add Blog" isMobile={isMobile} isCollapsed={isCollapsed} />
+        <div role="separator" className="-mx-1 my-2 h-px bg-muted"></div>
+        <SidebarLink href="/dashboard/setting" icon={<SettingsIcon />} label="Setting" isMobile={isMobile} isCollapsed={isCollapsed} />
         <Button variant="ghost" size="sm" className="w-full justify-start text-base" onClick={handleSignOut}>
           <LogOut className="w-15 h-15" />
           {!isMobile && !isCollapsed && <span className="ml-2 font-medium">Log Out</span>}
@@ -111,5 +92,16 @@ export default function Sidebar() {
         </Button>
       )}
     </aside>
+  );
+}
+
+function SidebarLink({ href, icon, label, isMobile, isCollapsed }: { href: string; icon: React.ReactNode; label: string; isMobile: boolean; isCollapsed: boolean }) {
+  return (
+    <Button variant="ghost" size="sm" className="w-full justify-start text-base" asChild>
+      <Link href={href} prefetch={false}>
+        {icon}
+        {!isMobile && !isCollapsed && <span className="ml-2 font-medium">{label}</span>}
+      </Link>
+    </Button>
   );
 }

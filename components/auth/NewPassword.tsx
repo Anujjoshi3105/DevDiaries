@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { newPasswordSchema } from '@/schemas';
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { resetpassword } from "@/action/auth/new-password";
 import { Password } from "@/components/ui/password";
 
@@ -25,6 +25,7 @@ export default function NewPassword() {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const formRef = useRef<HTMLFormElement>(null);
+    const router = useRouter();
 
     const onSubmit = async (values: FormData) => {
         setLoading(true);
@@ -53,6 +54,7 @@ export default function NewPassword() {
                     description: "Password has been successfully reset",
                 });
                 reset();
+                router.push('/auth/login');
             }
         } catch (error) {
             setLoading(false);
