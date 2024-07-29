@@ -9,8 +9,8 @@ export const getAllComments = async (blogId: string, parentCommentId?: string) =
     }
 
     try {
-        const whereCondition: { blogId: string; parentCommentId?: string } = { blogId };
-        if (parentCommentId) {
+        const whereCondition: { blogId: string; parentCommentId?: string | null } = { blogId };
+        if (parentCommentId !== undefined) {
             whereCondition.parentCommentId = parentCommentId;
         }
 
@@ -21,21 +21,27 @@ export const getAllComments = async (blogId: string, parentCommentId?: string) =
                     select: {
                         id: true,
                         title: true,
-                        authorId: true
+                        authorId: true,
                     }
                 },
-                user: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        image: true,
+                    }
+                },
                 replies: {
                     include: {
                         user: {
                             select: {
                                 id: true,
                                 name: true,
-                                image: true
+                                image: true,
                             }
                         }
                     }
-                }
+                },
             },
             orderBy: {
                 createdAt: 'desc'

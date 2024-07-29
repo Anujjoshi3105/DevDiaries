@@ -5,7 +5,7 @@ import { BlogSchema } from '@/schemas';
 import { getIdAndRole } from '@/action/user';
 
 
-export async function createBlog(formData? : FormData) {
+export async function createBlog(formData? : FormData | { title?: string | undefined; content?: string | undefined; topics?: string[] | undefined; image?: string | undefined; tagInput?: string | undefined; }) {
   try {
       const { userId } = await getIdAndRole();
 
@@ -107,7 +107,7 @@ export async function getBlog(blogId?: string, authorId?: string | null) {
 }
 
 // Update an existing blog
-export async function updateBlog(blogId: string, formData: FormData | null) {
+export async function updateBlog(blogId: string, formData: FormData | { title?: string | undefined; content?: string | undefined; topics?: string[] | undefined; image?: string | undefined; tagInput?: string | undefined; }) {
   try {
     const { userId, role } = await getIdAndRole();
 
@@ -122,7 +122,7 @@ export async function updateBlog(blogId: string, formData: FormData | null) {
 
     const { title, content, topics, image } = validation.data;
     let blog = await db.blog.findUnique({ where: { id: blogId } });
-    if (!blog || (!blog.publish && userId !== blog.authorId && role !== 'admin')) {
+    if (!blog || (userId !== blog.authorId && role !== 'admin')) {
       return { message: 'Blog not found' };
     }
 

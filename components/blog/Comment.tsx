@@ -1,38 +1,48 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, useCallback, FormEvent } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from '@/components/ui/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 import { getAllComments, createComment, deleteComment, updateComment } from '@/action/comment';
+import LikeButton from './LikeButton';
 
 interface User {
     id: string;
     name: string;
-    image?: string;
+    image: string | null;
+}
+
+interface Blog {
+    id: string;
+    title: string | null;
+    authorId: string;
 }
 
 interface Comment {
     id: string;
     content: string;
-    createdAt: string;
-    updatedAt: string;
-    user: User;
-    replies: Comment[]; // Nested replies, hence recursive
-    blog?: {
-        id: string;
-        title: string;
-        authorId: string;
-    };
-}
-
-interface CommentSectionProps {
+    createdAt: Date;
+    userId: string;
     blogId: string;
+    parentCommentId?: string | null;
+    user: User;
+    blog: Blog;
+    replies: {
+        id: string;
+        content: string;
+        createdAt: Date;
+        userId: string;
+        blogId: string;
+        parentCommentId: string | null;
+        user: User;
+    }[];
 }
 
-export default function CommentSection({ blogId }: CommentSectionProps) {
+
+export default function CommentSection({ blogId }: { blogId: string }) {
     const { data: session } = useSession();
     const [comments, setComments] = useState<Comment[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -42,7 +52,7 @@ export default function CommentSection({ blogId }: CommentSectionProps) {
     const [replyingCommentId, setReplyingCommentId] = useState<string | null>(null);
     const [replyFormData, setReplyFormData] = useState<string>('');
 
-    const fetchCommentData = async () => {
+    const fetchCommentData = useCallback(async () => {
         setLoading(true);
         try {
             const { response, error } = await getAllComments(blogId);
@@ -56,12 +66,12 @@ export default function CommentSection({ blogId }: CommentSectionProps) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [blogId]);
 
     useEffect(() => {
         fetchCommentData();
-    }, [blogId]);
-    
+    }, [fetchCommentData]);
+
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!formData.trim()) {
@@ -73,7 +83,7 @@ export default function CommentSection({ blogId }: CommentSectionProps) {
         try {
             await createComment(blogId, formData);
             setFormData('');
-            toast({ title: 'Success', description: 'Comment added', });
+            toast({ title: 'Success', description: 'Comment added' });
             fetchCommentData();
         } catch (error) {
             toast({ title: 'Error', description: 'Failed to add comment', variant: 'destructive' });
@@ -137,7 +147,7 @@ export default function CommentSection({ blogId }: CommentSectionProps) {
         }
     };
 
-    function timeSince(createdAt: string) {
+    function timeSince(createdAt: Date) {
         const now = new Date();
         const createdDate = new Date(createdAt);
         const diffInMs = now.getTime() - createdDate.getTime();
@@ -170,11 +180,11 @@ export default function CommentSection({ blogId }: CommentSectionProps) {
                 <Button size="sm" type="submit" disabled={loading}>Post Comment</Button>
             </form>
 
-            <h2 className="font-semibold text-xl">All Comments ({comments.length})</h2>
+            <h2 className="font-semibold text-xl">All Comments ({comments.filter(comment => comment.parentCommentId === null).length})</h2>
             {loading ? (
                 <p>Loading comments...</p>
             ) : (
-                comments.map((comment) => (
+                comments.filter(comment => comment.parentCommentId === null).map((comment) => (
                     <div key={comment.id} className="text-sm flex items-start gap-4">
                         <Avatar className="w-10 h-10">
                             {comment.user.image ? (
@@ -187,7 +197,6 @@ export default function CommentSection({ blogId }: CommentSectionProps) {
                             <div className="flex items-center gap-2">
                                 <div className="font-semibold">@{comment.user.name}</div>
                                 <div className="text-xs">{timeSince(comment.createdAt)}</div>
-                                <div className="text-xs">{comment.createdAt === comment.updatedAt ? '' : 'Edited'}</div>
                             </div>
                             {editingCommentId === comment.id ? (
                                 <form onSubmit={handleUpdate} className="flex gap-2 w-full">
@@ -203,6 +212,8 @@ export default function CommentSection({ blogId }: CommentSectionProps) {
                                 <div>{comment.content}</div>
                             )}
                             <div className="flex items-center gap-2 mt-1">
+                                <LikeButton blogId={blogId} commentId={comment.id} />
+                                                            
                                 {session?.user?.id === comment.user.id && (
                                     <>
                                         <Button size="sm" variant="secondary" onClick={() => setEditingCommentId(comment.id)} disabled={loading}>Edit</Button>
@@ -223,12 +234,14 @@ export default function CommentSection({ blogId }: CommentSectionProps) {
                                     <Button size="sm" variant="secondary" onClick={() => setReplyingCommentId(null)} disabled={loading}>Cancel</Button>
                                 </form>
                             )}
+
+                            {/* Render replies */}
                             {comment.replies.length > 0 && (
                                 <div className="ml-6 mt-2">
                                     {comment.replies.map((reply) => (
-                                        <div key={reply.id} className="text-sm flex items-start gap-4 mt-2">
+                                        <div key={reply.id} className="text-sm flex items-start gap-4">
                                             <Avatar className="w-8 h-8">
-                                                {reply.user.image ? (
+                                                { reply?.user?.image ? (
                                                     <AvatarImage src={reply.user.image} alt={reply.user.name} />
                                                 ) : (
                                                     <AvatarFallback>{reply.user.name.charAt(0).toUpperCase()}</AvatarFallback>
@@ -239,14 +252,29 @@ export default function CommentSection({ blogId }: CommentSectionProps) {
                                                     <div className="font-semibold">@{reply.user.name}</div>
                                                     <div className="text-xs">{timeSince(reply.createdAt)}</div>
                                                 </div>
-                                                <div>{reply.content}</div>
+                                                {editingCommentId === reply.id ? (
+                                                    <form onSubmit={handleUpdate} className="flex gap-2 w-full">
+                                                        <Textarea
+                                                            value={editFormData}
+                                                            onChange={(e) => setEditFormData(e.target.value)}
+                                                            disabled={loading}
+                                                        />
+                                                        <Button size="sm" type="submit" disabled={loading}>Update</Button>
+                                                        <Button size="sm" variant="secondary" onClick={() => setEditingCommentId(null)} disabled={loading}>Cancel</Button>
+                                                    </form>
+                                                ) : (
+                                                    <div>{reply.content}</div>
+                                                )}
                                                 <div className="flex items-center gap-2 mt-1">
+                                                    <LikeButton blogId={blogId} commentId={reply.id} />
+                                                    
                                                     {session?.user?.id === reply.user.id && (
                                                         <>
                                                             <Button size="sm" variant="secondary" onClick={() => setEditingCommentId(reply.id)} disabled={loading}>Edit</Button>
                                                             <Button size="sm" variant="destructive" onClick={() => handleDelete(reply.id)} disabled={loading}>Delete</Button>
                                                         </>
                                                     )}
+                                                    <Button size="sm" variant="secondary" onClick={() => setReplyingCommentId(reply.id)} disabled={loading}>Reply</Button>
                                                 </div>
                                             </div>
                                         </div>

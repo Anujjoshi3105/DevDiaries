@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,22 +16,19 @@ import { Progress } from '@/components/ui/progress';
 import { BlogSchema } from '@/schemas';
 import Image from 'next/image';
 import Tag from '@/components/ui/tag';
-
-interface BlogFormProps {
-  formData: {
-    title: string;
-    content: string;
-    topics: string[];
-    image: string;
-  };
-  handleSubmit: (data: any) => Promise<void>;
-}
+import { getBlog, updateBlog, createBlog } from '@/action/blog';
+import { useRouter } from 'next/navigation';
 
 type FormData = z.infer<typeof BlogSchema>;
 
-export default function BlogForm({ formData, handleSubmit }: BlogFormProps) {
+export default function BlogForm({ blogId }: { blogId?: string }) {
   const { register, handleSubmit: handleFormSubmit, setValue, watch, formState: { errors }, reset } = useForm<FormData>({
-    defaultValues: formData,
+    defaultValues: {
+      title: '',
+      content: '',
+      topics: [],
+      image: '',
+    },
     resolver: zodResolver(BlogSchema),
   });
 
@@ -41,6 +38,34 @@ export default function BlogForm({ formData, handleSubmit }: BlogFormProps) {
   const mdParser = new MarkdownIt();
   const localFormData = watch();
   const [submit, setSubmit] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (blogId) {
+      const fetchBlogData = async () => {
+        try {
+          const response = await getBlog(blogId);
+          if (response.blog) {
+            reset({
+              title: response.blog.title!,
+              content: response.blog.content!,
+              topics: response.blog.topics!,
+              image: response.blog.image!,
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching blog data:', error);
+          toast({
+            title: 'Error',
+            description: 'Failed to load blog data.',
+            variant: 'destructive',
+          });
+        }
+      };
+
+      fetchBlogData();
+    }
+  }, [blogId, reset, toast]);
 
   const handleTagsChange = (tags: string[]) => {
     setValue('topics', tags);
@@ -98,8 +123,40 @@ export default function BlogForm({ formData, handleSubmit }: BlogFormProps) {
   const onSubmit = async (data: FormData) => {
     setSubmit(true);
     try {
-      await handleSubmit(data);
-      reset(formData);
+      const validate = BlogSchema.safeParse(data);
+      if (!validate.success) {
+        toast({
+          title: 'Error',
+          description: validate.error.message,
+          variant: 'destructive',
+        });
+        setSubmit(false);
+        return;
+      }
+
+      console.log(data);
+      console.log(register);
+      
+      let response;
+      if (blogId) {
+        response = await updateBlog(blogId, data);
+      } else {
+        response = await createBlog(data);
+      }
+
+      if (!response.blog) {
+        toast({
+          title: `Failed to ${blogId ? 'update' : 'create'} blog`,
+          description: response.message || 'Please try again later.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: `Blog ${blogId ? 'updated' : 'created'} successfully`,
+          description: `Your blog has been ${blogId ? 'updated' : 'created'}.`,
+        });
+        router.push(`/blog/${response.blog.id}`);
+      }
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -126,41 +183,48 @@ export default function BlogForm({ formData, handleSubmit }: BlogFormProps) {
 
       <div className="grid gap-2">
         <label htmlFor="topics" className="block text-sm font-medium">Topics</label>
-        <Tag onTagsChange={handleTagsChange} />
+        <Tag initialTags={localFormData.topics} onTagsChange={handleTagsChange} />
         {errors.topics && <span className="text-destructive text-sm">{errors.topics.message}</span>}
       </div>
 
       <div className="grid gap-2">
-        <label htmlFor="imageUpload" className="block text-sm font-medium">Thumbnail</label>
-        {localFormData.image && (
-          <Image src={localFormData.image} width={200} height={200} alt="Thumbnail Preview" className="w-full h-[200px] object-cover" />
-        )}
+        <label htmlFor="image" className="block text-sm font-medium">Image</label>
         <Input
-          id="imageUpload"
+          id="image"
           type="file"
-          accept="image/*"
           onChange={handleImageUploadChange}
+          accept="image/*"
         />
-        {uploadingImage && <Progress value={progress} className="h-1" />}
+        {uploadingImage && <Progress value={progress} />}
+        {localFormData.image && (
+          <div className="relative h-52 w-full">
+            <Image
+              src={localFormData.image}
+              alt="Uploaded"
+              fill
+              className="rounded-md"
+              style={{ objectFit: 'cover' }}
+            />
+          </div>
+        )}
+        {errors.image && <span className="text-destructive text-sm">{errors.image.message}</span>}
       </div>
 
-      <div className="space-y-2">
+      <div className="grid gap-2">
         <label htmlFor="content" className="block text-sm font-medium">Content</label>
         <MdEditor
+          id="content"
           value={localFormData.content}
-          className="w-full h-[500px]"
           renderHTML={(text) => mdParser.render(text)}
           onChange={handleEditorChange}
-          onImageUpload={async (file: File) => {
-            const image = await handleImageUpload(file);
-            return image;
-          }}
+          className="h-96"
         />
         {errors.content && <span className="text-destructive text-sm">{errors.content.message}</span>}
       </div>
 
-      <Button type="submit" className="w-full flex gap-1" disabled={uploadingImage || submit}>
-        {uploadingImage || submit ? <><LoaderCircle className="w-4 h-4 animate-spin" />Loading</> : 'Submit'}
+      <Button type="submit" disabled={submit}>
+        {submit && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+        {blogId ? 'Update' : 'Create'} Blog
       </Button>
     </form>
   );

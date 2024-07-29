@@ -3,11 +3,14 @@
 import { db } from "@/lib/db";
 import { getIdAndRole } from "@/action/user";
 
-export const likeCount = async (blogId: string, commentId?: string): Promise<number> => {
+export const likeCount = async (blogId?: string, commentId?: string): Promise<number> => {
     try {
-        const whereClause: any = { blogId };
-        if (commentId) whereClause.commentId = commentId;
+        if (!blogId && !commentId) throw new Error("No blog or comment ID provided");
 
+        const whereClause: any = {};
+        if (commentId) whereClause.commentId = commentId;
+        else whereClause.blogId = blogId;
+        
         const like = await db.like.aggregate({
             where: whereClause,
             _sum: { likeCount: true },
@@ -20,14 +23,17 @@ export const likeCount = async (blogId: string, commentId?: string): Promise<num
     }
 };
 
-export const likeCountByUser = async (blogId: string, commentId?: string): Promise<number> => {
+export const likeCountByUser = async (blogId?: string, commentId?: string): Promise<number> => {
     const { userId } = await getIdAndRole();
     if (!userId) throw new Error("No logged user");
 
     try {
-        const whereClause: any = { blogId, userId };
-        if (commentId) whereClause.commentId = commentId;
+        if (!blogId && !commentId) throw new Error("No blog or comment ID provided");
 
+        const whereClause: any = { userId };
+        if (commentId) whereClause.commentId = commentId;
+        else whereClause.blogId = blogId;
+        
         const like = await db.like.aggregate({
             where: whereClause,
             _sum: { likeCount: true },
@@ -45,9 +51,12 @@ export const toggleLike = async (blogId: string, commentId?: string): Promise<bo
     if (!userId) throw new Error("No logged user");
 
     try {
-        const whereClause: any = { blogId, userId };
-        if (commentId) whereClause.commentId = commentId;
+        if (!blogId && !commentId) throw new Error("No blog or comment ID provided");
 
+        const whereClause: any = { userId };
+        if (commentId) whereClause.commentId = commentId;
+        else whereClause.blogId = blogId;
+        
         const existingLike = await db.like.findFirst({
             where: whereClause,
         });
@@ -58,7 +67,7 @@ export const toggleLike = async (blogId: string, commentId?: string): Promise<bo
         } else {
             await db.like.create({
                 data: {
-                    blogId,
+                    blogId: blogId,
                     userId,
                     commentId: commentId || null,
                     likeCount: 1,

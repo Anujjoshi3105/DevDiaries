@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { auth } from "@/auth"
-import { BlogSchema, newPasswordSchema } from "@/schemas";
+import { newPasswordSchema } from "@/schemas";
 import { hash } from "bcryptjs";
 
 export async function getIdAndRole() {

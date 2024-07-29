@@ -15,6 +15,8 @@ const LikeButton: React.FC<LikeButtonProps> = ({ blogId, commentId }) => {
 
   useEffect(() => {
     async function fetchData() {
+      if (!blogId && !commentId) return; // Handle the case where no IDs are provided
+      
       const totalLikes = await likeCount(blogId, commentId);
       const userLikes = await likeCountByUser(blogId, commentId);
       setLikes(totalLikes);
@@ -31,12 +33,12 @@ const LikeButton: React.FC<LikeButtonProps> = ({ blogId, commentId }) => {
       if(newLikeStatus) {
         toast({
           title: "Success",
-          description: "Blog liked successfully.",
+          description: "Like added successfully.",
         }); 
       } else {
         toast({
           title: "Success",
-          description: "Blog unliked successfully.",
+          description: "Like removed successfully.",
         });
       }
     } catch (error: any) {
@@ -54,7 +56,8 @@ const LikeButton: React.FC<LikeButtonProps> = ({ blogId, commentId }) => {
 
   return (
     <button onClick={handleLike} className="flex items-center justify-center gap-2 text-sm">
-        { <HeartIcon className={userLike ? 'fill-destructive text-destructive' : 'hover:fill-destructive'} />} {likes}
+        <HeartIcon className={userLike ? 'fill-destructive text-destructive' : 'hover:fill-destructive'} />
+        {likes}
     </button>
   );
 };

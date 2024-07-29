@@ -1,14 +1,18 @@
-"use client";
+'use client';
 
 import { X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const Tag = ({ onTagsChange }: { onTagsChange: (tags: string[]) => void }) => {
-  const [tags, setTags] = useState<string[]>([]);
+const Tag = ({ initialTags = [], onTagsChange }: { initialTags?: string[], onTagsChange: (tags: string[]) => void }) => {
+  const [tags, setTags] = useState<string[]>(initialTags);
   const [tagInput, setTagInput] = useState<string>('');
+
+  useEffect(() => {
+    setTags(initialTags);
+  }, [initialTags]);
 
   const addTag = () => {
     const trimmedTag = tagInput.trim();
