@@ -32,7 +32,7 @@ Dev Diaries is a platform where developers can share their experiences, insights
 ### BLOG PAGE
 ![blog](public/blog.png)
 ### ER MODEL
-![er model](public/ermodel.svg)
+![er model](public/ermodel.png)
 
 ## Features
 
