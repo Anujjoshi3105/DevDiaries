@@ -3,7 +3,8 @@ export const publicRoutes = [
     "/blog",
     "/blog/.*",
     "/user",
-    "/user/.*"
+    "/user/.*",
+    "/contact",
 ];
 export const authRoutes = [
     "/auth/login", 

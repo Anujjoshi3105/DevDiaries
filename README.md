@@ -26,7 +26,7 @@ Dev Diaries is a platform where developers can share their experiences, insights
 ### USER PROFILE
 ![user profile](profile.png)
 ### SEARCH PAGE
-![seach page](seach.png)
+![seach page](search.png)
 ### USER DASHBOARD
 ![user dashboard](dashboard.png)
 ### BLOG PAGE

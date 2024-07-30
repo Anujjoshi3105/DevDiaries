@@ -2,12 +2,11 @@
 import React from 'react';
 import { toast } from "@/components/ui/use-toast";
 import { LinkIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export default function LinkButton({ blogId }: { blogId: string }) {
     const handleCopyLink = async () => {
         try {
-            const url = `${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/blog/${blogId}`;
+            const url = `${process.env.NEXTAUTH_URL}/blog/${blogId}`;
             await navigator.clipboard.writeText(url);
             toast({
                 title: "Link Copied",
