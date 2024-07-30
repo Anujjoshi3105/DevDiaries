@@ -17,20 +17,21 @@ model User {
   name          String    @unique
   email         String    @unique
   emailVerified DateTime?
-  image         String?   @default("https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png")
+  image         String   @default("https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png")
   password      String?
   role          Role      @default(USER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  bio           String?
-  profession    String?
-  accounts Account[]
-  blogs   Blog[]
-  comments Comment[]
-  likes   Like[]
-  saves   Save[]
-  topics  Topics?
+  bio        String?
+  profession String?
+  accounts   Account[]
+  blogs      Blog[]
+  comments   Comment[]
+  likes      Like[]
+  saves      Save[]
+  followers  Following[] @relation("UserFollowers")
+  following  Following[] @relation("UserFollowings")
 }
 
 model Account {
@@ -77,11 +78,12 @@ model Blog {
   title     String?
   content   String?
   topics    String[]
-  image  String?
+  image     String?
   publish   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  views    Int       @default(0)
   author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   likes    Like[]
   comments Comment[]
@@ -121,20 +123,15 @@ model Save {
   userId    String
   blogId    String
 
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  blog  Blog  @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blog Blog @relation(fields: [blogId], references: [id], onDelete: Cascade)
 }
 
 model Following {
   id          String @id @default(dbgenerated("concat('following_', replace(cast(gen_random_uuid() as text), '-', ''))")) @db.Text
   followerId  String
   followingId String
-}
 
-model Topics {
-  id             String   @id @default(dbgenerated("concat('topics_', replace(cast(gen_random_uuid() as text), '-', ''))")) @db.Text
-  userId         String   @unique
-  selectedTopics String[]
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  follower  User @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowings", fields: [followingId], references: [id], onDelete: Cascade)
 }

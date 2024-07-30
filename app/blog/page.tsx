@@ -1,9 +1,11 @@
-import React from 'react'
+import SearchBlog from '@/components/SearchBlog';
 
-export default function page() {
+const SearchPage = () => {
   return (
     <div>
-      Blog
+      <SearchBlog />
     </div>
-  )
-}
+  );
+};
+
+export default SearchPage;

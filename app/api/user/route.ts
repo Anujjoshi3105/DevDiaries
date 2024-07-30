@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
             },
             likes: true,
             saves: true,
-            topics: true,
         }
     });
     return NextResponse.json({ user: user }, { status: 200 });

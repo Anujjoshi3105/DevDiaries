@@ -3,7 +3,6 @@
 import { CheckFollowing, toggleFollow } from '@/action/following';
 import React, { useEffect, useState } from 'react';
 import { toast } from "@/components/ui/use-toast";
-import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 
 interface FollowButtonProps {

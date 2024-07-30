@@ -50,7 +50,7 @@ export const toggleSave = async (blogId: string): Promise<boolean> => {
 export const getUserSavedBlogs = async (userId: string) => {
     try {
         const blogs = await db.save.findMany({
-            where: { userId, }, include: { blog: true, },
+            where: { userId, }, include: { blog : true, },
         });
 
         return { blogs };

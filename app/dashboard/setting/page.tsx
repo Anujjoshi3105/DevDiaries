@@ -8,7 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { storage, ref, uploadBytesResumable, getDownloadURL } from '@/app/firebase';
+import { storage, ref, uploadBytesResumable, getDownloadURL } from '@/firebase';
 import { signOut, useSession } from 'next-auth/react';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { userSchema, newPasswordSchema } from '@/schemas';
@@ -227,6 +227,24 @@ export default function Setting() {
     }
   };
 
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    e.dataTransfer.setData('text/plain', 'dragging');
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      setImage(file);
+      handleUpload(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
   return (
     <div className="grid gap-8 md:gap-16 p-8">
       <Card>
@@ -238,13 +256,21 @@ export default function Setting() {
           <form className="grid gap-4" onSubmit={handleUserSubmit}>
             <div className="grid gap-2">
               <Label htmlFor="avatar">Profile Picture</Label>
-              <div className="flex items-center gap-4">
+              <div 
+                className="flex items-center gap-4 cursor-pointer" 
+                onDragOver={handleDragOver} 
+                onDrop={handleDrop}
+                draggable
+                onDragStart={handleDragStart}
+              >
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={image ? URL.createObjectURL(image) : userForm.image} />
                   <AvatarFallback>{session?.user?.name?.charAt(0)}</AvatarFallback>
                 </Avatar>
+                <div>
+                  <Input id="avatar" type="file" onChange={handleImageChange} />
+                </div>
               </div>
-              <Input id="avatar" type="file" onChange={handleImageChange} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="username">Username</Label>
@@ -267,7 +293,7 @@ export default function Setting() {
               {userErrors.bio && <p className="text-destructive">{userErrors.bio}</p>}
             </div>
             <Button disabled={uploading || userLoading} type="submit">
-            { uploading || userLoading ? <><LoaderCircle className="w-4 h-4 animate-spin mr-2" />Loading</> : "Save Changes" }
+              {uploading || userLoading ? <><LoaderCircle className="w-4 h-4 animate-spin mr-2" />Loading</> : "Save Changes"}
             </Button>
           </form>
         </CardContent>

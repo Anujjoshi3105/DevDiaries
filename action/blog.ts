@@ -57,6 +57,8 @@ export async function getBlog(blogId?: string, authorId?: string | null) {
       const blog = await db.blog.findUnique({
         where: { id: blogId },
         include: {
+          likes: true,
+          comments: true,
           author: {
             select: {
               id: true,
@@ -73,19 +75,24 @@ export async function getBlog(blogId?: string, authorId?: string | null) {
       if (!blog || (!blog.publish && userId !== blog.authorId && role !== 'admin')) {
         return { message: 'Blog not found' };
       }
+      await db.blog.update({
+        where: { id: blogId },
+        data: {
+          views: {
+            increment: 1,
+          },
+        },
+      });
       return { blog };
     }
 
     if (authorId) {
-      // Fetch all blogs by the author ID
-      const blogs = await db.blog.findMany({ where: { authorId } });
+      const blogs = await db.blog.findMany({ where: { authorId } , include: { likes: true, comments: true, author: true } });
 
-      // Check if any blogs were found
       if (!blogs.length) {
         return { message: 'No blogs found' };
       }
 
-      // Filter blogs based on accessibility (published or user's own blog or admin)
       const accessibleBlogs = blogs.filter(
         blog => blog.publish || userId === blog.authorId || role === 'admin'
       );

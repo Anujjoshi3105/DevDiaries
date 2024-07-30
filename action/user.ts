@@ -39,7 +39,7 @@ export const getUserById = async(id: string) => {
 export const getUserByName = async (name: string) => {
   try {
     const normalizedName = name.toLowerCase();
-    const user = await db.user.findUnique({ where: { name: normalizedName } , include: { blogs: true } });
+    const user = await db.user.findUnique({ where: { name: normalizedName } , include: { blogs: { include: { author: true, likes: true }} } });
 
     if (user) {
       const { password, ...rest } = user;

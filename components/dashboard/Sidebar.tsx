@@ -54,7 +54,7 @@ export default function Sidebar() {
       <div className="flex flex-col items-center gap-4">
         <div className="flex items-center gap-2">
           <Avatar>
-            <AvatarImage src={session?.user?.image ?? '/default-avatar.png'} />
+            <AvatarImage src={session?.user?.image ?? 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'} />
             <AvatarFallback>{session?.user?.name?.charAt(0)}</AvatarFallback>
           </Avatar>
           {!isMobile && !isCollapsed && (
@@ -71,7 +71,7 @@ export default function Sidebar() {
         <SidebarLink href="/dashboard/" icon={<UserIcon />} label="Profile" isMobile={isMobile} isCollapsed={isCollapsed} />
         <div role="separator" className="-mx-1 my-2 h-px bg-muted"></div>
         <SidebarLink href="/dashboard/blog" icon={<FileText />} label="Blog" isMobile={isMobile} isCollapsed={isCollapsed} />
-        <SidebarLink href="/dashboard/add" icon={<FilePlus2 />} label="Add Blog" isMobile={isMobile} isCollapsed={isCollapsed} />
+        <SidebarLink href="/dashboard/edit" icon={<FilePlus2 />} label="Add Blog" isMobile={isMobile} isCollapsed={isCollapsed} />
         <div role="separator" className="-mx-1 my-2 h-px bg-muted"></div>
         <SidebarLink href="/dashboard/setting" icon={<SettingsIcon />} label="Setting" isMobile={isMobile} isCollapsed={isCollapsed} />
         <Button variant="ghost" size="sm" className="w-full justify-start text-base" onClick={handleSignOut}>

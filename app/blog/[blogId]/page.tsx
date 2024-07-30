@@ -9,6 +9,8 @@ import SaveButton from '@/components/blog/SaveButton';
 import LinkButton from '@/components/blog/LinkButton';
 import FollowButton from '@/components/blog/FollowButton';
 import CommentSection from '@/components/blog/Comment';
+import { Timer } from 'lucide-react';
+import { getReadTime } from '@/lib/helper';
 export async function generateMetadata({ params }: { params: { blogId: string } }): Promise<Metadata> {
   const data = await getBlog(params.blogId);
   return {
@@ -50,6 +52,9 @@ export default async function BlogPage({ params }: { params: { blogId: string } 
           </div>
           <div className="border-y-[1px] border-foreground/10 p-3 mt-6 flex items-center justify-between">
             <LikeButton blogId={blog.id} />
+            <div className='flex items-center gap-2'>
+              <Timer /> {getReadTime(blog.content || "")} read
+            </div>
             <div className="flex justify-center items-center gap-3">
               <SaveButton blogId={blog.id} />
               <LinkButton blogId={blog.id} />

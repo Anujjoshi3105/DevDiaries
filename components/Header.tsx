@@ -5,17 +5,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
-import { AlignLeftIcon, SearchIcon } from "lucide-react";
+import { AlignLeftIcon } from "lucide-react";
 import { headerLinks } from "@/data/navLink";
 import { Theme } from "@/components/Theme";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import User from "@/components/user";
 import { useSession, signOut } from "next-auth/react";
 import Search from "@/components/Search";
 export default function Header() {
   const { data: session, status } = useSession();
-  const [search, setSearch] = useState("");
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -24,7 +22,7 @@ export default function Header() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollPos = window.scrollY;
-      setIsNavbarVisible(currentScrollPos <= prevScrollPos || currentScrollPos === 0);
+      setIsNavbarVisible(currentScrollPos <= prevScrollPos || currentScrollPos < 100);
       setPrevScrollPos(currentScrollPos);
       setIsScrolled(currentScrollPos > 0);
     };
@@ -55,7 +53,7 @@ export default function Header() {
         isNavbarVisible ? "translate-y-0" : "-translate-y-full"
       } ${isScrolled ? "shadow-lg bg-background" : ""}`}
     >
-      <div className="flex h-24 w-full justify-between items-center px-4 md:px-20">
+      <div className="flex h-24 w-full justify-between items-center px-4 md:px-16">
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="lg:hidden">

@@ -11,7 +11,7 @@ import MarkdownIt from 'markdown-it';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/components/ui/use-toast';
-import { storage, ref, uploadBytesResumable, getDownloadURL } from '@/app/firebase';
+import { storage, ref, uploadBytesResumable, getDownloadURL } from '@/firebase';
 import { Progress } from '@/components/ui/progress';
 import { BlogSchema } from '@/schemas';
 import Image from 'next/image';
@@ -133,9 +133,6 @@ export default function BlogForm({ blogId }: { blogId?: string }) {
         setSubmit(false);
         return;
       }
-
-      console.log(data);
-      console.log(register);
       
       let response;
       if (blogId) {

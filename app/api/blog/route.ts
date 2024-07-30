@@ -39,60 +39,95 @@ export async function POST(request: NextRequest) {
     }
 }
 
+interface QueryParams {
+  search?: string;
+  topics?: string[];
+  quantity?: string;
+  sort?: string;
+  page?: string;
+}
+
+interface Where {
+  OR?: Array<{
+    title?: {
+      contains: string;
+    };
+    content?: {
+      contains: string;
+    };
+    author?: {
+      name: {
+        contains: string;
+      };
+    };
+  }>;
+  topics?: {
+    hasSome: string[];
+  };
+}
+
+interface OrderBy {
+  [key: string]: "asc" | "desc";
+}
+
 export async function GET(request: NextRequest) {
-    const blogId = request.nextUrl.searchParams.get('blogId');
-    let authorId = request.nextUrl.searchParams.get('authorId');
-    const session = await auth();
-    const userId = session?.user?.id;
-    const role = session?.user?.role;
-  
-    if (!blogId && !authorId) {
-      if (!userId) {
-        return NextResponse.json({ message: 'Author ID or session required' }, { status: 400 });
-      }
-      authorId = userId;
+  try {
+    const url = new URL(request.url);
+    const params: QueryParams = {
+      search: url.searchParams.get("search") || undefined,
+      topics: url.searchParams.getAll("topics"),
+      quantity: url.searchParams.get("quantity") || undefined,
+      sort: url.searchParams.get("sort") || undefined,
+      page: url.searchParams.get("page") || "1",
+    };
+
+    const where: Where = {};
+    if (params.search) {
+      where.OR = [
+        { title: { contains: params.search } },
+        { content: { contains: params.search } },
+        { author: { name: { contains: params.search } } },
+      ];
     }
-  
-    if (blogId) {
-      try {
-        const blog = await db.blog.findUnique({
-          where: { id: blogId },
-        });
-  
-        if (!blog || (!blog.publish && userId !== blog.authorId && role !== 'admin')) {
-          return NextResponse.json({ message: 'Blog not found' }, { status: 404 });
-        }
-  
-        return NextResponse.json({ blog }, { status: 200 });
-      } catch (error) {
-        console.error('Error fetching blog:', error);
-        return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
-      }
-    } else if (authorId) {
-      try {
-        const blogs = await db.blog.findMany({
-          where: { authorId },
-        });
-  
-        if (!blogs.length) {
-          return NextResponse.json({ message: 'No blogs found' }, { status: 404 });
-        }
-  
-        const accessibleBlogs = blogs.filter(blog => blog.publish || userId === blog.authorId || role === 'admin');
-  
-        if (!accessibleBlogs.length) {
-          return NextResponse.json({ message: 'No accessible blogs found' }, { status: 404 });
-        }
-  
-        return NextResponse.json({ blogs: accessibleBlogs }, { status: 200 });
-      } catch (error) {
-        console.error('Error fetching blogs:', error);
-        return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
-      }
-    } else {
-      return NextResponse.json({ message: 'Either blogId or authorId is required' }, { status: 400 });
+    if (params.topics && params.topics.length > 0) {
+      where.topics = {
+        hasSome: params.topics,
+      };
     }
+
+    const orderBy: OrderBy = {};
+    if (params.sort) {
+      const [field, direction] = params.sort.split("_");
+      orderBy[field] = direction as "asc" | "desc";
+    }
+
+    const page = Math.max(1, parseInt(params.page!));
+    const take = params.quantity ? parseInt(params.quantity) : 10;
+    const skip = (page - 1) * take;
+
+    const [blogs, totalBlogs] = await Promise.all([
+      db.blog.findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+        include: {
+          author: true,
+          likes: true,
+        },
+      }),
+      db.blog.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(totalBlogs / take);
+
+    return NextResponse.json({ blogs, totalPages }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching blogs:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+}
+
 // Function to handle PUT requests (Update an existing blog)
 export async function PUT(request: NextRequest) {
     const blogId = request.nextUrl.searchParams.get('blogId');
