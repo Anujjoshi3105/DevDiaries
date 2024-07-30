@@ -23,6 +23,15 @@ A comprehensive blog platform dedicated to developers of all levels, from beginn
 
 Dev Diaries is a platform where developers can share their experiences, insights, and technical expertise. It aims to create a community of learning, collaboration, and innovation within the tech industry.
 
+### USER PROFILE
+![user profile](profile.png)
+### SEARCH PAGE
+![seach page](seach.png)
+### USER DASHBOARD
+![user dashboard](dashboard.png)
+### BLOG PAGE
+![blog](blog.png)
+
 ## Features
 
 - User authentication and authorization
