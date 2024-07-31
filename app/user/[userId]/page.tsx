@@ -21,8 +21,8 @@ export async function generateMetadata({ params }: { params: { userId: string } 
 
 export default async function Page({ params }: { params: { userId: string } }) {
     const user = await getUserByName(params.userId);
-    const totalFollower = await NumberFollowers(params.userId);
-    const totalFollowing = await NumberFollowing(params.userId);
+    const totalFollower = await NumberFollowers(user?.id!);
+    const totalFollowing = await NumberFollowing(user?.id!);
     const topics = await NumberTopics(params.userId).then((result) => result.topics);
 
     if (!user) {
