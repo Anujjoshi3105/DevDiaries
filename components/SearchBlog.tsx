@@ -150,7 +150,7 @@ const SearchBlog: React.FC = () => {
             <CardHeader className='font-bold'>
               TOPICS
             </CardHeader>
-            <CardContent className="space-y-1 space-x-1">
+            <CardContent className="flex flex-wrap gap-2">
               {topics.map((topic) => (
                 <Badge
                   key={topic}

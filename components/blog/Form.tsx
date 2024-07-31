@@ -77,7 +77,7 @@ export default function BlogForm({ blogId }: { blogId?: string }) {
 
   const handleImageUpload = (file: File): Promise<string> => {
     setUploadingImage(true);
-    const storageRef = ref(storage, file.name);
+    const storageRef = ref(storage, `blog_images/${Date.now()}_${file.name}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     return new Promise((resolve, reject) => {
@@ -133,7 +133,7 @@ export default function BlogForm({ blogId }: { blogId?: string }) {
         setSubmit(false);
         return;
       }
-      
+
       let response;
       if (blogId) {
         response = await updateBlog(blogId, data);
@@ -214,6 +214,7 @@ export default function BlogForm({ blogId }: { blogId?: string }) {
           value={localFormData.content}
           renderHTML={(text) => mdParser.render(text)}
           onChange={handleEditorChange}
+          onImageUpload={handleImageUpload}
           className="h-96"
         />
         {errors.content && <span className="text-destructive text-sm">{errors.content.message}</span>}

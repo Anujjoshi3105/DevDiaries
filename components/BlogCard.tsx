@@ -73,7 +73,7 @@ const BlogCard: FC<BlogCardProps> = ({
         </div>
         {description && (
           <p className="text-sm py-4 text-muted-foreground">
-            <ReactMarkdown>{description.substring(0, 50)}</ReactMarkdown>
+            <ReactMarkdown>{description.substring(0, 200)}</ReactMarkdown>
           </p>
         )}
         {variant !== 'secondary' && (
